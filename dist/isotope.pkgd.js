@@ -903,13 +903,16 @@ proto.getPosition = function() {
   var isOriginTop = this.layout._getOption('originTop');
   var xValue = style[ isOriginLeft ? 'left' : 'right' ];
   var yValue = style[ isOriginTop ? 'top' : 'bottom' ];
+  var x = parseFloat( xValue );
+  var y = parseFloat( yValue );
   // convert percent to pixels
   var layoutSize = this.layout.size;
-  var x = xValue.indexOf('%') != -1 ?
-    ( parseFloat( xValue ) / 100 ) * layoutSize.width : parseInt( xValue, 10 );
-  var y = yValue.indexOf('%') != -1 ?
-    ( parseFloat( yValue ) / 100 ) * layoutSize.height : parseInt( yValue, 10 );
-
+  if ( xValue.indexOf('%') != -1 ) {
+    x = ( x / 100 ) * layoutSize.width;
+  }
+  if ( yValue.indexOf('%') != -1 ) {
+    y = ( y / 100 ) * layoutSize.height;
+  }
   // clean up 'auto' or other non-integer values
   x = isNaN( x ) ? 0 : x;
   y = isNaN( y ) ? 0 : y;
@@ -972,9 +975,7 @@ proto._transitionTo = function( x, y ) {
   var curX = this.position.x;
   var curY = this.position.y;
 
-  var compareX = parseInt( x, 10 );
-  var compareY = parseInt( y, 10 );
-  var didNotMove = compareX === this.position.x && compareY === this.position.y;
+  var didNotMove = x == this.position.x && y == this.position.y;
 
   // save end position
   this.setPosition( x, y );
@@ -1017,8 +1018,8 @@ proto.goTo = function( x, y ) {
 proto.moveTo = proto._transitionTo;
 
 proto.setPosition = function( x, y ) {
-  this.position.x = parseInt( x, 10 );
-  this.position.y = parseInt( y, 10 );
+  this.position.x = parseFloat( x );
+  this.position.y = parseFloat( y );
 };
 
 // ----- transition ----- //
@@ -1323,7 +1324,7 @@ return Item;
 }));
 
 /*!
- * Outlayer v2.1.0
+ * Outlayer v2.1.1
  * the brains and guts of a layout library
  * MIT license
  */
@@ -3172,6 +3173,7 @@ var trim = String.prototype.trim ?
   // -------------------------- filter -------------------------- //
 
   proto._filter = function( items ) {
+      var _this = this;
     var filter = this.options.filter;
     filter = filter || '*';
     var matches = [];
@@ -3201,6 +3203,7 @@ var trim = String.prototype.trim ?
       }
     }
 
+    _this.dispatchEvent( 'filterStart', null);
     // return collections of items to be manipulated
     return {
       matches: matches,
@@ -3419,7 +3422,9 @@ var trim = String.prototype.trim ?
   };
 
   proto.needsResizeLayout = function() {
-    return this._mode().needsResizeLayout();
+      this.dispatchEvent( 'resize', null);
+
+      return this._mode().needsResizeLayout();
   };
 
   // -------------------------- adding & removing -------------------------- //

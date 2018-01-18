@@ -233,6 +233,7 @@ var trim = String.prototype.trim ?
   // -------------------------- filter -------------------------- //
 
   proto._filter = function( items ) {
+      var _this = this;
     var filter = this.options.filter;
     filter = filter || '*';
     var matches = [];
@@ -262,6 +263,7 @@ var trim = String.prototype.trim ?
       }
     }
 
+    _this.dispatchEvent( 'filterStart', null);
     // return collections of items to be manipulated
     return {
       matches: matches,
@@ -480,7 +482,9 @@ var trim = String.prototype.trim ?
   };
 
   proto.needsResizeLayout = function() {
-    return this._mode().needsResizeLayout();
+      this.dispatchEvent( 'resize', null);
+
+      return this._mode().needsResizeLayout();
   };
 
   // -------------------------- adding & removing -------------------------- //
